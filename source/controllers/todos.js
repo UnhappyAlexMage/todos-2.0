@@ -67,7 +67,7 @@ export function addPage(req, res) {
 export function add(req, res) {
         const todo = {
                 title: req.body.title,
-                desc: req.body.desc,
+                desc: req.body.desc || '',
                 user: req.user.id,
                 createdAt: (new Date()).toString()
         };

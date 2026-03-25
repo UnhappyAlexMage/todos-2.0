@@ -17,7 +17,7 @@ export async function register(req, res) {
         salt: salt
     };
     addUser(user);
-    res.redirect('/');
+    res.redirect('/login');
 }
 
 export function loginPage(req, res) {
@@ -47,13 +47,14 @@ export function logout(req, res, next) {
     delete req.session.user;
     req.session.save((err) => {
         if(err)
-            next(err)
-        else
+            next(err);
+        else {
             req.session.regenerate((err) => {
                 if(err)
-                    next(err)
+                    next(err);
                 else
                     res.redirect('/login');
-        });
+            });
+        }
     })
 }
