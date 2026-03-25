@@ -15,11 +15,18 @@ import session from 'express-session';
 import _FileStore from 'session-file-store';
 import { flash } from 'express-flash-message';
 
+const FileStore = _FileStore(session);
+
 const router = Router();
 
+router.use('/uploaded', staticMiddleware('storage/uploaded'));
+
+router.use(staticMiddleware('public'));
+
+router.use(urlencoded({ extended: true }));
+router.use(methodOverride('_method'));
 router.use(cookieParser());
 
-const FileStore = _FileStore(session);
 router.use(session({
     store: new FileStore({
         path: './storage/sessions',
@@ -34,23 +41,13 @@ router.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: 1000 * 60 * 60
+        maxAge: 1000 * 60 * 60 * 7 * 24
     }
 }));
 
 router.use(flash({ sessionKeyName: 'flash-message' }));
 router.use(extendFlashAPI);
-
 router.use(loadCurrentUser);
-
-router.use('/uploaded', staticMiddleware('storage/uploaded'));
-
-router.use(staticMiddleware('public'));
-
-router.use(urlencoded({ extended: true, limit: 32}));
-router.use(methodOverride('_method'));
-
-router.use(mainErrorHandler, error500Handler);
 
 router.use(requestToContext);
 
@@ -62,7 +59,7 @@ router.post('/login', isGuest, loginV, handleErrors, login);
 
 router.use(isLoggedIn);
 
-router.post('/login', logout);
+router.post('/logout', logout);
 
 router.get('/add', getErrors, addPage);
 router.post('/add', addendumWrapper, todoV, handleErrors, add);
@@ -71,5 +68,7 @@ router.put('/:id', setDone);
 router.delete('/:id', remove);
 router.post('/setorder', setOrder);
 router.get('/', mainPage);
+
+router.use(mainErrorHandler, error500Handler);
 
 export default router;
