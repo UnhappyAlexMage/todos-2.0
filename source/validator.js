@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { body } from 'express-validator';
 import { getUsers } from './models/users.js';
 import { pbkdf2Promisified } from './utility.js';
