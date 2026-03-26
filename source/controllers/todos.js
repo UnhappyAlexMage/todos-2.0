@@ -7,8 +7,8 @@ import { join } from "node:path";
 import { rm } from 'node:fs/promises';
 import { currentDir } from '../utility.js';
 
-export function mainPage(req, res) {
-        let list = getList(req.user.id);
+export async function mainPage(req, res) {
+        let list = await getList(req.user.id, req.cookies.doneAtLast, req.query.search);
 
         if(req.cookies.doneAtLast === '1') {
                 list = [...list];
@@ -44,64 +44,70 @@ export function mainPage(req, res) {
                 todos: list,
                 title: 'Главная'
         });
-}
+};
 
-export function detailPage(req, res) {
-        const t = getItem(req.params.id, req.user.id);
+export async function detailPage(req, res, next) {
+        try { 
+                const t = await getItem(req.params.id, req.user.id);
+                if(!t) {
+                        throw createError(404, 'Запрошнное дело не существует');
+                }
 
-        if(!t) {
-                throw createError(404, 'Запрошнное дело не существует');
-        }
+                res.render('detail', {
+                        todo: t, 
+                        title: t.title
+                });
+        } catch (err) {
+                next(err);
+        };
 
-        res.render('detail', {
-                todo: t, 
-                title: t.title
-        });
-
-}
+};
 
 export function addPage(req, res) {
         res.render('add', { title: 'Добавление дела!'});
-}
+};
 
-export function add(req, res) {
+export async function add(req, res) {
         const todo = {
                 title: req.body.title,
                 desc: req.body.desc || '',
-                user: req.user.id,
-                createdAt: (new Date()).toString()
+                user: req.user.id
         };
         if(req.file)
                 todo.addendum = req.file.filename;
-        addItem(todo);
+        await addItem(todo);
         res.redirect('/');
-}
+};
 
-export function setDone(req, res) {
-        if (setDoneItem(req.params.id, req.user.id))
-                res.redirect('/');
-        else
-                throw createError(404, 'Запрошнное дело не существует');
-}
+export async function setDone(req, res, next) {
+        try {
+                if (await setDoneItem(req.params.id, req.user.id)) {
+                        res.redirect('/');
+                }
+                else
+                        throw createError(404, 'Запрошнное дело не существует');
+        } catch (err) {
+                next(err);
+        }
+};
 
 export async function remove(req, res, next) {
         try {
-                const t = getItem(req.params.id, req.user.id);
+                const t = deleteItem(req.params.id, req.user.id);
                 if (!t)
                         throw createError(404, 'Запрошенного дела не сущевствует');
                 if(t.addendum)
                         await rm(join(currentDir, 'storage', 'uploaded', t.addendum));
-                deleteItem(t._id, req.user.id);
                 res.redirect('/');
         } catch(err) {
                 next(err);
         }
-}
+};
 
 export function setOrder(req, res) {
         res.cookie('doneAtLast', req.body.done_at_last);
         res.redirect('/');
-}
+};
 
 export function addendumWrapper(req, res, next) {
         addendUploader(req, res, (err) => {
@@ -118,4 +124,4 @@ export function addendumWrapper(req, res, next) {
                 else
                         next();
         });
-}
+};
