@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { body } from 'express-validator';
-import { getUsers } from './models/users.js';
+import { getUser } from './models/users.js';
 import { pbkdf2Promisified } from './utility.js';
 
 const todoV = [
@@ -13,8 +13,8 @@ export { todoV };
 const registerV = [
     body('username').isString().trim().notEmpty()
                     .withMessage('Не указано имя пользователя')
-                    .custom((value) => {
-                        if(getUsers(value))
+                    .custom(async (value) => {
+                        if(await getUser(value))
                             throw new Error('Пользователь с таким именем уже ' +
                             'зарегистрирован');
                         return true;
@@ -34,8 +34,8 @@ export { registerV };
 const loginV = [
     body('username').isString().trim().notEmpty()
                     .withMessage('Не указано имя пользователя')
-                    .custom((value, { req }) => {
-                        const user = getUsers(value);
+                    .custom(async (value, { req }) => {
+                        const user = await getUser(value);
                         if(user) {
                             req.__user = user;
                             return true;
@@ -46,8 +46,8 @@ const loginV = [
                     .withMessage('Не указан пароль')
                     .custom(async (value, { req }) => {
                         if(req.__user) {
-                            const savedPassword = Buffer.from(req.__user.password);
-                            const salt = Buffer.from(req.__user.salt);
+                            const savedPassword = req.__user.password;
+                            const salt = req.__user.salt;
                             const password = await pbkdf2Promisified(value, salt, 100000, 32, 'sha256');
                             if(timingSafeEqual(savedPassword, password))
                                 return true;
