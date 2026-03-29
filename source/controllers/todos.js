@@ -1,4 +1,4 @@
-import { getList, getItem, addItem, setDoneItem, deleteItem } from '../models/todos.js';
+import { getList, getItem, addItem, setDoneItem, deleteItem, getMostAcriveUsers } from '../models/todos.js';
 import createError from 'http-errors';
 
 import { addendUploader } from '../uploaders.js';
@@ -124,4 +124,13 @@ export function addendumWrapper(req, res, next) {
                 else
                         next();
         });
+};
+
+export async function mostActiveUsers(req, res) {
+        const r = await getMostAcriveUsers();
+        res.render('most-active', {
+                title: 'Самые активные пользователи',
+                mostActiveAll: r[0],
+                mostActiveDone: r[1]
+        }); 
 };
