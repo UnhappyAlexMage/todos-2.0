@@ -1,6 +1,6 @@
 import { Router, urlencoded, static as staticMiddleware } from 'express';
 
-import { mainPage, detailPage, addPage, add, setDone, remove, setOrder, addendumWrapper } from './controllers/todos.js';
+import { mainPage, detailPage, addPage, add, setDone, remove, setOrder, addendumWrapper, mostActiveUsers } from './controllers/todos.js';
 import { mainErrorHandler, error500Handler } from './error-handlers.js';
 import methodOverride from 'method-override';
 
@@ -60,6 +60,8 @@ router.post('/login', isGuest, loginV, handleErrors, login);
 router.use(isLoggedIn);
 
 router.post('/logout', logout);
+
+router.get('/mostactive', mostActiveUsers);
 
 router.get('/add', getErrors, addPage);
 router.post('/add', addendumWrapper, todoV, handleErrors, add);
