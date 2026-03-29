@@ -8,10 +8,7 @@ export async function getList(user, doneAtLast, search) {
     else
         qTodos.sort('createdAt');
     if(search)
-        qTodos.or([
-            { title: new RegExp(search, 'i') },
-            { desc: new RegExp(search, 'i') },
-        ]);
+        qTodos.contains(search);
     return await qTodos;
 };
 
@@ -25,15 +22,46 @@ export async function addItem(todo) {
 };
 
 export async function setDoneItem(id, user) {
-    const todo = await getItem(id, user);
-    if(todo) {
-        todo.done = true;
-        await todo.save();
-        return true;
-    } else
-        return false;
+    return await Todo.findOneAndSetDone(id, user);
 };
 
 export async function deleteItem(id, user) {
     return await Todo.findOneAndDelete({ _id: id, user: user });
+};
+
+export async function getMostAcriveUsers() {
+    const result = [];
+
+    result[0] = await Todo.aggregate([
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'user',
+                foreignField: '_id',
+                as: 'userObj'
+            }
+        },
+        { $unwind: '$userObj' },
+        { $group: { _id: '$userObj.username', cnt: { $count: {} } } },
+        { $sort: { cnt: -1 } },
+        { $limit: 3 }
+    ]);
+
+    result[1] = await Todo.aggregate([
+        { $match: { done: true } },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'user',
+                foreignField: '_id',
+                as: 'userObj'
+            }
+        },
+        { $unwind: '$userObj' },
+        { $group: { _id: '$userObj.username', cnt: { $count: {} } } },
+        { $sort: { cnt: -1 } },
+        { $limit: 3 }
+    ]);
+
+    return result;
 };
