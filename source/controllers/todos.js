@@ -38,12 +38,7 @@ export async function mainPage(req, res) {
                 });
         };
 
-        res.render('main', {
-                // req: req, --> delete from middleware
-                // todos: getList(),
-                todos: list,
-                title: 'Главная'
-        });
+        res.json({ todos: list });
 };
 
 export async function detailPage(req, res, next) {
@@ -53,10 +48,7 @@ export async function detailPage(req, res, next) {
                         throw createError(404, 'Запрошнное дело не существует');
                 }
 
-                res.render('detail', {
-                        todo: t, 
-                        title: t.title
-                });
+                res.json({ todo: t.toJSON() });
         } catch (err) {
                 next(err);
         };
@@ -76,13 +68,15 @@ export async function add(req, res) {
         if(req.file)
                 todo.addendum = req.file.filename;
         await addItem(todo);
-        res.redirect('/');
+        res.status(201);
+        res.end();
 };
 
 export async function setDone(req, res, next) {
         try {
                 if (await setDoneItem(req.params.id, req.user.id)) {
-                        res.redirect('/');
+                        res.status(202);
+                        res.end();
                 }
                 else
                         throw createError(404, 'Запрошнное дело не существует');
@@ -98,7 +92,8 @@ export async function remove(req, res, next) {
                         throw createError(404, 'Запрошенного дела не сущевствует');
                 if(t.addendum)
                         await rm(join(currentDir, 'storage', 'uploaded', t.addendum));
-                res.redirect('/');
+                res.status(204);
+                res.end();
         } catch(err) {
                 next(err);
         }
@@ -128,9 +123,8 @@ export function addendumWrapper(req, res, next) {
 
 export async function mostActiveUsers(req, res) {
         const r = await getMostAcriveUsers();
-        res.render('most-active', {
-                title: 'Самые активные пользователи',
+        res.json({
                 mostActiveAll: r[0],
                 mostActiveDone: r[1]
-        }); 
+        })
 };
