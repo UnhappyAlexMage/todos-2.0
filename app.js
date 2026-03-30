@@ -1,19 +1,20 @@
 import express from 'express';
 import { config } from 'dotenv';
+import 'dotenv/config'
 
 import { connectToDB } from './source/models/__loaddatabase.js';
 import router from './source/router.js';
 
-config();
+//config();
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT;
 
 const app = express();
 
-app.locals.appTitle = process.env.APPTITLE || 'Express';
+app.locals.appTitle = process.env.APPTITLE || 'Backend express';
 
-app.set('view engine', 'ejs');
-app.set('views', './source/templates');
+// app.set('view engine', 'ejs');
+// app.set('views', './source/templates');
 
 (async () => {
     await connectToDB();
