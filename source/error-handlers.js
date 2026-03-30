@@ -10,18 +10,12 @@ export function mainErrorHandler(err, req, res, next) {
                 message = 'Передано слишком много данных';
                 break;
         }
-        res.render('errors/error', {
-            title: 'Ошибка',
-            message: message
-        });
+        res.json({ message: message });
     } else
         next(err);
 }
 
 export function error500Handler(err, req, res, next) {
     res.status(500);
-    res.render('errors/500', {
-        title: 'Ошибка',
-        err: err
-    })
+    res.json({ err: err });
 }
