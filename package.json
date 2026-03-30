@@ -10,18 +10,15 @@
     "serve": "nodemon app.js"
   },
   "dependencies": {
-    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "ejs": "^3.1.9",
     "express": "^4.21.2",
-    "express-flash-message": "^2.1.0",
-    "express-session": "^1.18.2",
     "express-validator": "^7.3.1",
-    "method-override": "^3.0.0",
+    "jsonwebtoken": "^9.0.3",
     "mongodb": "^5.9.2",
     "mongoose": "^7.8.9",
-    "multer": "^1.4.4",
-    "session-file-store": "^1.5.0"
+    "multer": "^1.4.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
